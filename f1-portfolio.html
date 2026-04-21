@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASWIN | F1 Developer Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ==================== ROOT ==================== */
+:root {
+  --black: #080808;
+  --dark: #0f0f0f;
+  --panel: #141414;
+  --panel2: #1a1a1a;
+  --border: rgba(255,255,255,0.07);
+  --red: #e8001d;
+  --red2: #ff1e1e;
+  --white: #f5f5f5;
+  --grey: #888;
+  --dim: #444;
+  --neon: #00e5ff;
+  --gold: #f5c842;
+  --green: #39ff14;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  overflow-x: hidden;
+}
+
+/* Scanline overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--black); }
+::-webkit-scrollbar-thumb { background: var(--red); }
+
+/* ==================== RACE START LOADER ==================== */
+#loader {
+  position: fixed;
+  inset: 0;
+  background: var(--black);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+.lights-row {
+  display: flex;
+  gap: 1.2rem;
+}
+.light {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: #1a0000;
+  border: 2px solid #330000;
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.8);
+  transition: all 0.18s ease;
+}
+.light.on {
+  background: var(--red);
+  border-color: var(--red2);
+  box-shadow: 0 0 20px var(--red), 0 0 40px rgba(232,0,29,0.5), inset 0 0 8px rgba(255,100,100,0.3);
+}
+.light.go {
+  background: var(--green);
+  border-color: #00ff00;
+  box-shadow: 0 0 20px var(--green), 0 0 40px rgba(57,255,20,0.5);
+}
+.loader-text {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.4em;
+  color: var(--grey);
+  text-transform: uppercase;
+}
+.loader-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--red);
+  letter-spacing: 0.15em;
+  animation: blink 0.8s infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ==================== NAV ==================== */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 500;
+  height: 56px;
+  background: rgba(8,8,8,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 2.5rem;
+  gap: 2rem;
+}
+.nav-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-right: auto;
+}
+.nav-logo-accent {
+  display: inline-block;
+  width: 8px; height: 26px;
+  background: var(--red);
+  border-radius: 2px;
+}
+.nav-links {
+  display: flex;
+  gap: 0.25rem;
+  list-style: none;
+}
+.nav-links a {
+  display: inline-block;
+  padding: 0.35rem 0.9rem;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--grey);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+}
+.nav-links a:hover {
+  color: var(--white);
+  border-color: rgba(232,0,29,0.4);
+  background: rgba(232,0,29,0.08);
+}
+.nav-timer {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--neon);
+  letter-spacing: 0.05em;
+  border-left: 1px solid var(--border);
+  padding-left: 1.5rem;
+}
+
+/* ==================== HERO ==================== */
+#hero {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px 2.5rem 2.5rem;
+  overflow: hidden;
+}
+
+/* Track grid background */
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  perspective: 400px;
+  transform: rotateX(20deg) scale(1.2);
+  transform-origin: bottom;
+  opacity: 0.6;
+}
+.hero-grid::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 50%;
+  background: linear-gradient(transparent, var(--black));
+}
+
+/* Speed lines */
+.speed-lines {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.speed-line {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(232,0,29,0.4), transparent);
+  animation: speedline 2.5s linear infinite;
+  opacity: 0;
+}
+@keyframes speedline {
+  0% { transform: translateX(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(100vw); opacity: 0; }
+}
+
+.hero-content { position: relative; z-index: 2; max-width: 900px; }
+
+.hero-number {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(7rem, 18vw, 16rem);
+  font-weight: 900;
+  line-height: 0.85;
+  position: absolute;
+  right: -1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255,255,255,0.025);
+  letter-spacing: -0.05em;
+  user-select: none;
+  z-index: 1;
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--red);
+  padding: 0.3rem 1rem;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 100%, 8px 100%);
+  animation: fadeUp 0.5s 0.2s both;
+}
+
+.hero-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(2.8rem, 7vw, 6rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  animation: fadeUp 0.5s 0.3s both;
+}
+.hero-name span { color: var(--red); }
+
+.hero-role {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--grey);
+  margin-bottom: 2rem;
+  animation: fadeUp 0.5s 0.4s both;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 0;
+  margin-bottom: 3rem;
+  animation: fadeUp 0.5s 0.5s both;
+}
+.hero-stat {
+  padding: 1rem 1.8rem;
+  border: 1px solid var(--border);
+  border-right: none;
+  position: relative;
+}
+.hero-stat:first-child { border-left: 2px solid var(--red); }
+.hero-stat:last-child { border-right: 1px solid var(--border); }
+.hero-stat .val {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--white);
+  display: block;
+}
+.hero-stat .key {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--grey);
+  font-weight: 600;
+}
+
+.hero-cta {
+  display: flex;
+  gap: 1rem;
+  animation: fadeUp 0.5s 0.6s both;
+}
+.btn-f1 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.8rem;
+  background: var(--red);
+  color: var(--white);
+  text-decoration: none;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 100%, 10px 100%);
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+}
+.btn-f1:hover { background: var(--red2); transform: translateX(3px); }
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.8rem;
+  background: transparent;
+  color: var(--white);
+  text-decoration: none;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,0.2);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 100%, 10px 100%);
+  transition: all 0.2s;
+}
+.btn-ghost:hover { border-color: var(--red); color: var(--red); }
+
+/* ==================== SECTION COMMONS ==================== */
+section { padding: 6rem 2.5rem; }
+
+.sec-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-bottom: 3.5rem;
+}
+.sec-number {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--red);
+  letter-spacing: 0.1em;
+}
+.sec-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.sec-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(232,0,29,0.5), transparent);
+}
+
+/* ==================== ABOUT / DRIVER BIO ==================== */
+#about { background: var(--dark); }
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 4rem;
+  align-items: center;
+}
+.driver-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--red);
+  padding: 2rem;
+  position: relative;
+}
+.driver-card::before {
+  content: 'DRIVER PROFILE';
+  position: absolute;
+  top: -0.55rem;
+  left: 1rem;
+  background: var(--red);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  padding: 0.15rem 0.6rem;
+  color: var(--white);
+}
+.driver-number-big {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 6rem;
+  font-weight: 900;
+  color: rgba(255,255,255,0.04);
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  line-height: 1;
+}
+.driver-name-display {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+.driver-team {
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--red);
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+.driver-data {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.driver-data-item {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-right: none;
+  border-bottom: none;
+}
+.driver-data-item:nth-child(2n) { border-right: 1px solid var(--border); }
+.driver-data-item:nth-last-child(-n+2) { border-bottom: 1px solid var(--border); }
+.driver-data-item .dk { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--grey); font-weight: 600; margin-bottom: 0.2rem; }
+.driver-data-item .dv { font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: var(--white); }
+
+.bio-text {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: rgba(245,245,245,0.75);
+  font-weight: 400;
+  margin-bottom: 2rem;
+}
+
+.telemetry-bar {
+  margin-bottom: 1rem;
+}
+.tel-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--grey);
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+.tel-track {
+  height: 4px;
+  background: rgba(255,255,255,0.05);
+  position: relative;
+  overflow: hidden;
+}
+.tel-fill {
+  height: 100%;
+  background: var(--red);
+  width: 0;
+  transition: width 1.4s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+}
+.tel-fill::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 6px;
+  background: rgba(255,255,255,0.6);
+}
+
+/* ==================== SKILLS / CAR SPECS ==================== */
+#skills { background: var(--black); }
+.specs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+.spec-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--dim);
+  padding: 1.75rem;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.spec-panel::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--red), transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s;
+}
+.spec-panel:hover { border-top-color: var(--red); transform: translateY(-3px); }
+.spec-panel:hover::after { transform: scaleX(1); }
+
+.spec-category {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.spec-category::before {
+  content: '';
+  display: inline-block;
+  width: 12px; height: 2px;
+  background: var(--red);
+}
+
+.spec-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.spec-item:last-child { border-bottom: none; }
+.spec-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  min-width: 90px;
+  color: rgba(245,245,245,0.85);
+}
+.spec-bar-wrap { flex: 1; }
+.spec-bar-bg {
+  height: 3px;
+  background: rgba(255,255,255,0.05);
+  position: relative;
+  overflow: visible;
+}
+.spec-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--red), #ff6b6b);
+  width: 0;
+  transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+}
+.spec-bar-fill::after {
+  content: '';
+  position: absolute;
+  right: -3px; top: -3px;
+  width: 9px; height: 9px;
+  background: var(--white);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--red);
+}
+.spec-pct {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--grey);
+  min-width: 32px;
+  text-align: right;
+}
+
+/* ==================== PROJECTS / RACE HISTORY ==================== */
+#projects { background: var(--dark); }
+.races-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+.race-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s;
+  cursor: pointer;
+}
+.race-card:hover { transform: translateY(-4px); border-color: rgba(232,0,29,0.4); }
+.race-card:hover .race-card-bar { transform: scaleX(1); }
+
+.race-card-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--red);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+.race-pos {
+  position: absolute;
+  top: 1rem; right: 1rem;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: rgba(255,255,255,0.04);
+  line-height: 1;
+}
+.race-inner { padding: 1.75rem; }
+.race-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(232,0,29,0.1);
+  border: 1px solid rgba(232,0,29,0.25);
+  padding: 0.2rem 0.7rem;
+  font-size: 0.65rem;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 1rem;
+  clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%);
+}
+.race-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.5rem;
+  line-height: 1.25;
+}
+.race-desc {
+  font-size: 0.85rem;
+  color: rgba(245,245,245,0.55);
+  line-height: 1.65;
+  margin-bottom: 1.25rem;
+  font-weight: 400;
+}
+.race-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+.race-tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.68rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--border);
+  color: var(--grey);
+  letter-spacing: 0.05em;
+}
+.race-links {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.race-link {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--grey);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.2s;
+}
+.race-link:hover { color: var(--red); }
+.race-link svg { width: 12px; height: 12px; }
+
+/* ==================== EXPERIENCE / CAREER TIMELINE ==================== */
+#experience { background: var(--black); }
+.timeline {
+  position: relative;
+  max-width: 800px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, var(--red), rgba(232,0,29,0.1));
+}
+.timeline-item {
+  padding: 0 0 3rem 2.5rem;
+  position: relative;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -5px; top: 6px;
+  width: 11px; height: 11px;
+  background: var(--red);
+  border: 2px solid var(--black);
+  transform: rotate(45deg);
+}
+.timeline-year {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--red);
+  letter-spacing: 0.15em;
+  margin-bottom: 0.5rem;
+}
+.timeline-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.25rem;
+}
+.timeline-sub {
+  font-size: 0.82rem;
+  color: var(--red);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+.timeline-body {
+  font-size: 0.92rem;
+  color: rgba(245,245,245,0.6);
+  line-height: 1.7;
+  font-weight: 400;
+  max-width: 600px;
+}
+
+/* ==================== CONTACT / PIT STOP ==================== */
+#contact { background: var(--dark); }
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 4rem;
+  align-items: start;
+}
+.pitstop-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--red);
+  padding: 2rem;
+  position: relative;
+}
+.pitstop-panel::before {
+  content: 'PIT STOP · TEAM RADIO';
+  position: absolute;
+  top: -0.55rem; left: 1rem;
+  background: var(--red);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  padding: 0.15rem 0.6rem;
+  color: var(--white);
+}
+.pitstop-panel h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+.pitstop-panel p {
+  font-size: 0.9rem;
+  color: rgba(245,245,245,0.55);
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--red);
+  margin-bottom: 0.75rem;
+  transition: background 0.2s;
+}
+.contact-item:hover { background: rgba(232,0,29,0.05); }
+.ci-icon {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(232,0,29,0.1);
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.ci-key { font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); font-weight: 600; }
+.ci-val { font-family: 'Share Tech Mono', monospace; font-size: 0.88rem; color: var(--white); }
+
+.radio-form { display: flex; flex-direction: column; gap: 1rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.fg { display: flex; flex-direction: column; gap: 0.4rem; }
+.fg label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.fg input, .fg textarea {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-bottom: 1px solid rgba(232,0,29,0.3);
+  padding: 0.75rem 1rem;
+  color: var(--white);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+  resize: none;
+}
+.fg input:focus, .fg textarea:focus {
+  border-color: var(--red);
+  background: rgba(232,0,29,0.03);
+}
+.fg textarea { height: 110px; }
+
+/* ==================== FOOTER ==================== */
+footer {
+  background: var(--black);
+  border-top: 1px solid var(--border);
+  padding: 1.75rem 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.footer-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.footer-copy {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--grey);
+  letter-spacing: 0.08em;
+}
+.footer-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--green);
+}
+.status-dot {
+  width: 6px; height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(57,255,20,0.5); }
+  50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(57,255,20,0); }
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ==================== HUD CORNER DECORATIONS ==================== */
+.hud-corner {
+  position: absolute;
+  width: 16px; height: 16px;
+  pointer-events: none;
+}
+.hud-corner.tl { top: 0; left: 0; border-top: 2px solid var(--red); border-left: 2px solid var(--red); }
+.hud-corner.tr { top: 0; right: 0; border-top: 2px solid var(--red); border-right: 2px solid var(--red); }
+.hud-corner.bl { bottom: 0; left: 0; border-bottom: 2px solid var(--red); border-left: 2px solid var(--red); }
+.hud-corner.br { bottom: 0; right: 0; border-bottom: 2px solid var(--red); border-right: 2px solid var(--red); }
+
+/* ==================== LIVE TICKER ==================== */
+.ticker-bar {
+  background: var(--red);
+  padding: 0.35rem 0;
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+}
+.ticker-track {
+  display: inline-flex;
+  gap: 4rem;
+  animation: ticker 28s linear infinite;
+}
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-item {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--white);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.ticker-sep { opacity: 0.4; }
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 900px) {
+  nav { padding: 0 1.25rem; }
+  .nav-links { display: none; }
+  section { padding: 4rem 1.25rem; }
+  #hero { padding: 72px 1.25rem 2rem; }
+  .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .specs-grid { grid-template-columns: 1fr; }
+  .races-grid { grid-template-columns: 1fr; }
+  .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .form-row { grid-template-columns: 1fr; }
+  .hero-stats { flex-wrap: wrap; }
+  .hero-number { display: none; }
+  footer { flex-direction: column; gap: 1rem; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ========== LOADER ========== -->
+<div id="loader">
+  <div class="loader-text">Initialising Systems</div>
+  <div class="lights-row">
+    <div class="light" id="l1"></div>
+    <div class="light" id="l2"></div>
+    <div class="light" id="l3"></div>
+    <div class="light" id="l4"></div>
+    <div class="light" id="l5"></div>
+  </div>
+  <div class="loader-sub" id="loaderSub">LOADING...</div>
+</div>
+
+<!-- ========== NAV ========== -->
+<nav>
+  <div class="nav-logo">
+    <span class="nav-logo-accent"></span>
+    ASWIN
+  </div>
+  <ul class="nav-links">
+    <li><a href="#about">Driver Bio</a></li>
+    <li><a href="#skills">Car Specs</a></li>
+    <li><a href="#projects">Race History</a></li>
+    <li><a href="#experience">Career</a></li>
+    <li><a href="#contact">Pit Stop</a></li>
+  </ul>
+  <div class="nav-timer" id="navTimer">00:00:000</div>
+</nav>
+
+<!-- ========== TICKER ========== -->
+<div class="ticker-bar" style="margin-top:56px;">
+  <div class="ticker-track">
+    <span class="ticker-item">🏎 Angular Developer <span class="ticker-sep">|</span> TCS Engineer</span>
+    <span class="ticker-item">⚡ 1+ Year Experience <span class="ticker-sep">|</span> Namakkal, India</span>
+    <span class="ticker-item">🔧 Frontend Specialist <span class="ticker-sep">|</span> B.Tech Information Technology</span>
+    <span class="ticker-item">🏁 Available for Opportunities <span class="ticker-sep">|</span> Open to Remote</span>
+    <span class="ticker-item">🏎 Angular Developer <span class="ticker-sep">|</span> TCS Engineer</span>
+    <span class="ticker-item">⚡ 1+ Year Experience <span class="ticker-sep">|</span> Namakkal, India</span>
+    <span class="ticker-item">🔧 Frontend Specialist <span class="ticker-sep">|</span> B.Tech Information Technology</span>
+    <span class="ticker-item">🏁 Available for Opportunities <span class="ticker-sep">|</span> Open to Remote</span>
+  </div>
+</div>
+
+<!-- ========== HERO ========== -->
+<section id="hero">
+  <div class="hero-grid"></div>
+  <div class="speed-lines" id="speedLines"></div>
+  <div class="hero-number">01</div>
+
+  <div class="hero-content">
+    <div class="hero-tag">🏎 Driver Profile · Season 2024</div>
+    <h1 class="hero-name">ASWIN<span>.</span></h1>
+    <p class="hero-role">Angular Developer &nbsp;·&nbsp; Frontend Engineer &nbsp;·&nbsp; TCS</p>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="val">1+</span>
+        <span class="key">Years @ TCS</span>
+      </div>
+      <div class="hero-stat">
+        <span class="val">80%</span>
+        <span class="key">B.Tech Score</span>
+      </div>
+      <div class="hero-stat">
+        <span class="val">8+</span>
+        <span class="key">Skills</span>
+      </div>
+      <div class="hero-stat">
+        <span class="val">🟢</span>
+        <span class="key">Available</span>
+      </div>
+    </div>
+
+    <div class="hero-cta">
+      <a href="#contact" class="btn-f1">📡 Open Comms</a>
+      <a href="#projects" class="btn-ghost">View Race History</a>
+    </div>
+  </div>
+</section>
+
+<!-- ========== ABOUT ========== -->
+<section id="about">
+  <div class="sec-header reveal">
+    <span class="sec-number">01 ///</span>
+    <h2 class="sec-title">Driver Bio</h2>
+    <div class="sec-line"></div>
+  </div>
+  <div class="about-grid">
+    <div class="driver-card reveal">
+      <div class="hud-corner tl"></div>
+      <div class="hud-corner tr"></div>
+      <div class="hud-corner bl"></div>
+      <div class="hud-corner br"></div>
+      <div class="driver-number-big">01</div>
+      <div class="driver-name-display">Aswin</div>
+      <div class="driver-team">Tata Consultancy Services · Angular Dev</div>
+      <div class="driver-data">
+        <div class="driver-data-item"><div class="dk">D.O.B</div><div class="dv">07 OCT 2001</div></div>
+        <div class="driver-data-item"><div class="dk">Nationality</div><div class="dv">Indian</div></div>
+        <div class="driver-data-item"><div class="dk">Degree</div><div class="dv">B.Tech IT</div></div>
+        <div class="driver-data-item"><div class="dk">College</div><div class="dv">Kongu Eng.</div></div>
+        <div class="driver-data-item"><div class="dk">Score</div><div class="dv">80%</div></div>
+        <div class="driver-data-item"><div class="dk">Location</div><div class="dv">Namakkal, TN</div></div>
+      </div>
+    </div>
+    <div class="reveal">
+      <p class="bio-text">Angular Developer with 1+ year of experience at Tata Consultancy Services, engineering scalable, high-performance web applications. Specialised in reusable component architecture, RESTful API integration, and precision-crafted responsive UI design.<br><br>Like an F1 car engineered for maximum performance on every circuit, I build interfaces optimised for speed, reliability, and exceptional user experience.</p>
+      <div class="telemetry-bar">
+        <div class="tel-label"><span>Code Quality</span><span>95%</span></div>
+        <div class="tel-track"><div class="tel-fill" data-w="95"></div></div>
+      </div>
+      <div class="telemetry-bar">
+        <div class="tel-label"><span>Problem Solving</span><span>90%</span></div>
+        <div class="tel-track"><div class="tel-fill" data-w="90"></div></div>
+      </div>
+      <div class="telemetry-bar">
+        <div class="tel-label"><span>Team Collaboration</span><span>92%</span></div>
+        <div class="tel-track"><div class="tel-fill" data-w="92"></div></div>
+      </div>
+      <div class="telemetry-bar">
+        <div class="tel-label"><span>Delivery Speed</span><span>88%</span></div>
+        <div class="tel-track"><div class="tel-fill" data-w="88"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SKILLS ========== -->
+<section id="skills">
+  <div class="sec-header reveal">
+    <span class="sec-number">02 ///</span>
+    <h2 class="sec-title">Car Specifications</h2>
+    <div class="sec-line"></div>
+  </div>
+  <div class="specs-grid reveal">
+
+    <div class="spec-panel">
+      <div class="spec-category">Frontend Engine</div>
+      <div class="spec-item">
+        <span class="spec-name">Angular</span>
+        <div class="spec-bar-wrap"><div class="spec-bar-bg"><div class="spec-bar-fill" data-w="95"></div></div></div>
+        <span class="spec-pct">95%</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-name">TypeScript</span>
+        <div class="spec-bar-wrap"><div class="spec-bar-bg"><div class="spec-bar-fill" data-w="82"></div></div></div>
+        <span class="spec-pct">82%</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-name">JavaScript</span>
+        <div class="spec-bar-wrap"><div class="spec-bar-bg"><div class="spec-bar-fill" data-w="90"></div></div></div>
+        <span class="spec-pct">90%</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-name">HTML5</span>
+        <div class="spec-bar-wrap"><div class="spec-bar-bg"><div class="spec-bar-fill" data-w="95"></div></div></div>
+        <span class="spec-pct">95%</span>
+      </div>
+    </div>
+
+    <div class="spec-panel">
+      <div class="spec-category">Aero Package · Styling</div>
+      <div class="spec-item">
+        <span class="spec-name">CSS3</span>
+        <div class="spec-bar-wrap"><div class="spec-bar-bg"><div class="spec-bar-fill" data-w="90"></div></div></div>
+        <span class="spec-pct">90%</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-name">SCSS</span>
+        <div class="spec-bar-wrap"><div class="spec-bar-bg"><div class="spec-bar-fill" data-w="85"></div></div></div>
+        <span class="spec-pct">85%</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-name">Tailwind</span>
+        <div class="spec-bar-wrap"><div class="spec-bar-bg"><div class="spec-bar-fill" data-w="78"></div></div></div>
+        <span class="spec-pct">78%</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-name">Bootstrap</span>
+        <div class="spec-bar-wrap"><div class="spec-bar-bg"><div class="spec-bar-fill" data-w="80"></div></div></div>
+        <span class="spec-pct">80%</span>
+      </div>
+    </div>
+
+    <div class="spec-panel">
+      <div class="spec-category">Powertrain · Backend</div>
+      <div class="spec-item">
+        <span class="spec-name">Node.js</span>
+        <div class="spec-bar-wrap"><div class="spec-bar-bg"><div class="spec-bar-fill" data-w="85"></div></div></div>
+        <span class="spec-pct">85%</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-name">REST API</span>
+        <div class="spec-bar-wrap"><div class="spec-bar-bg"><div class="spec-bar-fill" data-w="88"></div></div></div>
+        <span class="spec-pct">88%</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-name">SQL</span>
+        <div class="spec-bar-wrap"><div class="spec-bar-bg"><div class="spec-bar-fill" data-w="92"></div></div></div>
+        <span class="spec-pct">92%</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-name">Git</span>
+        <div class="spec-bar-wrap"><div class="spec-bar-bg"><div class="spec-bar-fill" data-w="88"></div></div></div>
+        <span class="spec-pct">88%</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ========== PROJECTS ========== -->
+<section id="projects">
+  <div class="sec-header reveal">
+    <span class="sec-number">03 ///</span>
+    <h2 class="sec-title">Race History</h2>
+    <div class="sec-line"></div>
+  </div>
+  <div class="races-grid" id="racesGrid">
+    <!-- loaded by JS -->
+  </div>
+</section>
+
+<!-- ========== EXPERIENCE ========== -->
+<section id="experience">
+  <div class="sec-header reveal">
+    <span class="sec-number">04 ///</span>
+    <h2 class="sec-title">Career Timeline</h2>
+    <div class="sec-line"></div>
+  </div>
+  <div class="timeline reveal">
+    <div class="timeline-item">
+      <div class="timeline-year">2023 — PRESENT</div>
+      <div class="timeline-title">Angular Developer</div>
+      <div class="timeline-sub">Tata Consultancy Services (TCS)</div>
+      <div class="timeline-body">Engineered scalable Angular web applications for enterprise clients. Built reusable component libraries, integrated RESTful APIs, and delivered pixel-perfect responsive UI implementations. Collaborated in agile teams to ship features at race pace.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">2019 — 2023</div>
+      <div class="timeline-title">B.Tech — Information Technology</div>
+      <div class="timeline-sub">Kongu Engineering College · 80%</div>
+      <div class="timeline-body">Graduated with a strong foundation in software engineering, data structures, web technologies, and database management. Led multiple team projects and developed an early passion for frontend development and UI design.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">2017 — 2019</div>
+      <div class="timeline-title">Higher Secondary Education</div>
+      <div class="timeline-sub">Narayana Junior College · 92%</div>
+      <div class="timeline-body">Achieved 92% in State Board examinations with a focus on Mathematics and Computer Science. Developed problem-solving fundamentals that power performance to this day.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== CONTACT ========== -->
+<section id="contact">
+  <div class="sec-header reveal">
+    <span class="sec-number">05 ///</span>
+    <h2 class="sec-title">Pit Stop · Team Radio</h2>
+    <div class="sec-line"></div>
+  </div>
+  <div class="contact-grid">
+    <div class="pitstop-panel reveal">
+      <div class="hud-corner tl"></div>
+      <div class="hud-corner br"></div>
+      <h3>Open Comms</h3>
+      <p>Whether it's a new project, collaboration or just a conversation — the radio channel is always open. I respond fast.</p>
+      <div class="contact-item">
+        <div class="ci-icon">📧</div>
+        <div><div class="ci-key">Email</div><div class="ci-val">aswinnkl710@gmail.com</div></div>
+      </div>
+      <div class="contact-item">
+        <div class="ci-icon">📞</div>
+        <div><div class="ci-key">Phone</div><div class="ci-val">+91 8300640201</div></div>
+      </div>
+      <div class="contact-item">
+        <div class="ci-icon">📍</div>
+        <div><div class="ci-key">Location</div><div class="ci-val">Namakkal, Tamil Nadu, India</div></div>
+      </div>
+      <div class="contact-item">
+        <div class="ci-icon">🐙</div>
+        <div><div class="ci-key">GitHub</div><div class="ci-val">github.com/aswin-710</div></div>
+      </div>
+    </div>
+    <div class="reveal">
+      <form class="radio-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="fg">
+            <label>Driver Name</label>
+            <input type="text" placeholder="Your Name">
+          </div>
+          <div class="fg">
+            <label>Radio Frequency</label>
+            <input type="email" placeholder="your@email.com">
+          </div>
+        </div>
+        <div class="fg">
+          <label>Transmission Subject</label>
+          <input type="text" placeholder="Project · Collaboration · Enquiry">
+        </div>
+        <div class="fg">
+          <label>Message</label>
+          <textarea placeholder="Transmit your message..."></textarea>
+        </div>
+        <button type="submit" class="btn-f1" style="border:none; margin-top:0.5rem; font-family:'Orbitron',sans-serif;">📡 Transmit Message</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer>
+  <div class="footer-logo">
+    <span class="nav-logo-accent"></span>
+    ASWIN
+  </div>
+  <div class="footer-copy">© 2024 · ALL SYSTEMS NOMINAL</div>
+  <div class="footer-status">
+    <span class="status-dot"></span>
+    LIVE · AVAILABLE
+  </div>
+</footer>
+
+<script>
+/* ====== LOADER: Race Start Lights ====== */
+const lights = [1,2,3,4,5].map(i => document.getElementById('l'+i));
+const loaderSub = document.getElementById('loaderSub');
+const phases = ['SYSTEM CHECK...','ENGINE WARM-UP...','GRID POSITION...','LIGHTS OUT...','GO GO GO!'];
+let phase = 0;
+
+function lightSequence() {
+  if (phase < 5) {
+    loaderSub.textContent = phases[phase];
+    if (phase < 5) lights[phase] && lights[phase].classList.add('on');
+    phase++;
+    setTimeout(lightSequence, 380);
+  } else {
+    setTimeout(() => {
+      lights.forEach(l => { l.classList.remove('on'); l.classList.add('go'); });
+      loaderSub.textContent = '🏎 LIGHTS OUT!';
+      loaderSub.style.color = 'var(--green)';
+      setTimeout(() => {
+        document.getElementById('loader').style.transition = 'opacity 0.5s ease';
+        document.getElementById('loader').style.opacity = '0';
+        setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+      }, 600);
+    }, 400);
+  }
+}
+setTimeout(lightSequence, 300);
+
+/* ====== LIVE TIMER ====== */
+const timerEl = document.getElementById('navTimer');
+let ms = 0;
+setInterval(() => {
+  ms += 17;
+  const min = Math.floor(ms / 60000).toString().padStart(2,'0');
+  const sec = Math.floor((ms % 60000) / 1000).toString().padStart(2,'0');
+  const mil = (ms % 1000).toString().padStart(3,'0');
+  timerEl.textContent = `${min}:${sec}:${mil}`;
+}, 17);
+
+/* ====== SPEED LINES ====== */
+const slContainer = document.getElementById('speedLines');
+for (let i = 0; i < 12; i++) {
+  const line = document.createElement('div');
+  line.className = 'speed-line';
+  line.style.cssText = `
+    width: ${80 + Math.random() * 200}px;
+    top: ${Math.random() * 100}%;
+    animation-delay: ${Math.random() * 3}s;
+    animation-duration: ${1.5 + Math.random() * 2}s;
+    opacity: 0;
+  `;
+  slContainer.appendChild(line);
+}
+
+/* ====== SCROLL REVEAL ====== */
+const revealEls = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.12 });
+revealEls.forEach(el => io.observe(el));
+
+/* ====== BAR ANIMATIONS ====== */
+const allBars = document.querySelectorAll('.tel-fill, .spec-bar-fill');
+const barObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.width = e.target.dataset.w + '%';
+      barObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.3 });
+allBars.forEach(b => barObs.observe(b));
+
+/* ====== RACE CARDS: live GitHub + fallback ====== */
+const LANG_COLORS = {
+  JavaScript:'#f7df1e', TypeScript:'#3178c6', HTML:'#e34c26',
+  CSS:'#563d7c', SCSS:'#c6538c', Python:'#3572A5', default:'#e8001d'
+};
+const ICONS = { angular:'⚡', portfolio:'🌐', todo:'✅', chat:'💬', game:'🎮', ui:'🖥', api:'🔗', auth:'🔒', node:'🟢', default:'🏎' };
+function getIcon(n) {
+  n = (n||'').toLowerCase();
+  for (const [k,v] of Object.entries(ICONS)) if (n.includes(k)) return v;
+  return ICONS.default;
+}
+function cleanName(n) { return n.replace(/[-_]/g,' ').replace(/\b\w/g,l=>l.toUpperCase()); }
+
+const SAMPLE_RACES = [
+  { icon:'⚡', name:'Angular Task Manager', desc:'Enterprise-grade task management built with Angular 15. Drag-and-drop, real-time state, full CRUD with REST API.', tags:['Angular','TypeScript','SCSS'], lang:'TypeScript', langColor:'#3178c6', stars:12, pos:'P1', url:'https://github.com/aswin-710', live:'' },
+  { icon:'🌐', name:'Portfolio Website', desc:'Personal developer portfolio with smooth animations, F1-inspired UI and a fully responsive layout.', tags:['HTML','CSS','JavaScript'], lang:'HTML', langColor:'#e34c26', stars:8, pos:'P2', url:'https://github.com/aswin-710', live:'https://aswin-710.github.io/portfolio/' },
+  { icon:'🛒', name:'E-Commerce UI', desc:'High-performance e-commerce front-end with product grid, cart system, and checkout flow using Angular & SCSS.', tags:['Angular','SCSS','Node.js'], lang:'Angular', langColor:'#dd0031', stars:6, pos:'P3', url:'https://github.com/aswin-710', live:'' },
+  { icon:'🔗', name:'REST API Dashboard', desc:'Interactive analytics dashboard consuming external REST APIs. Dynamic charts, filter controls, and live data refresh.', tags:['TypeScript','Angular','SQL'], lang:'TypeScript', langColor:'#3178c6', stars:7, pos:'P4', url:'https://github.com/aswin-710', live:'' },
+  { icon:'✅', name:'Todo App', desc:'Minimal, clean productivity app with local persistence, priority tagging, and category-based filtering.', tags:['JavaScript','CSS'], lang:'JavaScript', langColor:'#f7df1e', stars:4, pos:'P5', url:'https://github.com/aswin-710', live:'' },
+  { icon:'💅', name:'UI Component Library', desc:'Reusable Angular component library — buttons, modals, tables, forms — fully themed with SCSS design tokens.', tags:['Angular','SCSS','TypeScript'], lang:'SCSS', langColor:'#c6538c', stars:9, pos:'P6', url:'https://github.com/aswin-710', live:'' },
+];
+
+function renderRaceCards(projects) {
+  const grid = document.getElementById('racesGrid');
+  grid.innerHTML = projects.map((p, idx) => `
+    <div class="race-card reveal">
+      <div class="race-card-bar"></div>
+      <div class="race-pos">${p.pos || ('P'+(idx+1))}</div>
+      <div class="race-inner">
+        <div class="race-flag">${p.icon} ${p.lang || 'Code'}</div>
+        <div class="race-name">${p.name}</div>
+        <div class="race-desc">${p.desc}</div>
+        <div class="race-meta">${(p.tags||[]).map(t=>`<span class="race-tag">${t}</span>`).join('')}</div>
+        <div class="race-links">
+          <a href="${p.url}" target="_blank" class="race-link">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            Source Code
+          </a>
+          ${p.live ? `<a href="${p.live}" target="_blank" class="race-link">🔗 Live Demo</a>` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+  document.querySelectorAll('.race-card.reveal').forEach(el => io.observe(el));
+}
+
+async function loadRaces() {
+  try {
+    const res = await fetch('https://api.github.com/users/aswin-710/repos?per_page=100&sort=updated', {
+      headers: { Accept: 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) throw new Error();
+    const repos = await res.json();
+    const filtered = repos.filter(r => !r.fork).sort((a,b) => new Date(b.updated_at)-new Date(a.updated_at)).slice(0,6);
+    if (!filtered.length) throw new Error();
+    const mapped = filtered.map((r,i) => ({
+      icon: getIcon(r.name),
+      name: cleanName(r.name),
+      desc: r.description || 'A project built with precision and clean code.',
+      tags: [r.language || 'Code'],
+      lang: r.language || 'Code',
+      langColor: LANG_COLORS[r.language] || LANG_COLORS.default,
+      stars: r.stargazers_count,
+      pos: 'P'+(i+1),
+      url: r.html_url,
+      live: r.homepage || ''
+    }));
+    renderRaceCards(mapped);
+  } catch {
+    renderRaceCards(SAMPLE_RACES);
+  }
+}
+loadRaces();
+</script>
+</body>
+</html>
